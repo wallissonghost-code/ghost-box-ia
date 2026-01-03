@@ -1,17 +1,34 @@
 "use client";
 import { useState } from "react";
-import { Sandpack } from "@codesandbox/sandpack-react";
-import { Play, Code2 } from "lucide-react";
+import { 
+  SandpackProvider, 
+  SandpackLayout, 
+  SandpackCodeEditor, 
+  SandpackPreview 
+} from "@codesandbox/sandpack-react";
+import { Play, Code2, Eye, Box } from "lucide-react";
 
 export default function Home() {
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState<"code" | "preview">("preview");
+  
   const [files, setFiles] = useState({
     "/App.js": `export default function App() {
   return (
-    <div style={{ fontFamily: 'system-ui, sans-serif', textAlign: 'center', padding: 50, color: '#333' }}>
-      <h1 style={{ color: '#ff4444' }}>🟥 Redbox IA</h1>
-      <p>O ambiente está pronto! Digite abaixo para criar.</p>
+    <div style={{ 
+      height: '100vh', 
+      display: 'flex', 
+      alignItems: 'center', 
+      justifyContent: 'center', 
+      background: '#0a0a0a', 
+      color: '#fff',
+      fontFamily: 'system-ui' 
+    }}>
+      <div style={{ textAlign: 'center' }}>
+        <h1 style={{ fontSize: '3rem', margin: 0, color: '#ff4444' }}>Redbox</h1>
+        <p style={{ color: '#666' }}>Sua IA de criação web.</p>
+      </div>
     </div>
   );
 }`,
@@ -20,6 +37,7 @@ export default function Home() {
   async function handleGenerate() {
     if (!prompt) return;
     setLoading(true);
+    setActiveTab("preview"); // Muda para o preview automaticamente ao gerar
     try {
       const response = await fetch("/api/generate", {
         method: "POST",
@@ -28,45 +46,150 @@ export default function Home() {
       const newFiles = await response.json();
       setFiles(newFiles);
     } catch (error) {
-      alert("Erro ao gerar. Verifique sua chave API.");
+      alert("Erro na IA. Verifique sua chave API.");
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div style={{ display: "flex", height: "100vh", flexDirection: "column", background: "#111", color: "white" }}>
-      {/* Header */}
-      <div style={{ padding: "15px", borderBottom: "1px solid #333", display: "flex", alignItems: "center", gap: "10px", background: "#1a1a1a" }}>
-        <Code2 color="#ff4444" />
-        <h2 style={{ fontSize: 18, margin: 0 }}>Redbox IA</h2>
+    <div style={{ display: "flex", height: "100vh", flexDirection: "column", background: "#000", color: "white" }}>
+      
+      {/* Header Pro */}
+      <div style={{ 
+        padding: "12px 16px", 
+        borderBottom: "1px solid #222", 
+        display: "flex", 
+        justifyContent: "space-between",
+        alignItems: "center", 
+        background: "#0a0a0a"
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <div style={{ background: "#ff4444", padding: "6px", borderRadius: "6px" }}>
+            <Box size={18} color="white" />
+          </div>
+          <span style={{ fontWeight: "bold", letterSpacing: "1px" }}>REDBOX</span>
+        </div>
+        
+        {/* Controle de Abas */}
+        <div style={{ display: "flex", background: "#1a1a1a", borderRadius: "8px", padding: "2px" }}>
+          <button 
+            onClick={() => setActiveTab("code")}
+            style={{ 
+              padding: "8px 16px", 
+              borderRadius: "6px", 
+              background: activeTab === "code" ? "#333" : "transparent",
+              color: activeTab === "code" ? "white" : "#666",
+              border: "none",
+              display: "flex",
+              alignItems: "center",
+              gap: 6
+            }}
+          >
+            <Code2 size={16} /> Código
+          </button>
+          <button 
+            onClick={() => setActiveTab("preview")}
+            style={{ 
+              padding: "8px 16px", 
+              borderRadius: "6px", 
+              background: activeTab === "preview" ? "#ff4444" : "transparent",
+              color: activeTab === "preview" ? "white" : "#666",
+              border: "none",
+              display: "flex",
+              alignItems: "center",
+              gap: 6
+            }}
+          >
+            <Eye size={16} /> Visual
+          </button>
+        </div>
       </div>
 
-      {/* Input */}
-      <div style={{ padding: 15, display: "flex", gap: 10, background: "#222" }}>
-        <input 
-          value={prompt}
-          onChange={(e) => setPrompt(e.target.value)}
-          placeholder="Ex: Calculadora simples estilo iPhone..."
-          style={{ flex: 1, padding: 12, borderRadius: 6, border: "none", outline: "none" }}
-        />
-        <button 
-          onClick={handleGenerate} 
-          disabled={loading} 
-          style={{ background: "#ff4444", color: "white", border: "none", padding: "0 20px", borderRadius: 6, fontWeight: "bold" }}
-        >
-          {loading ? "Criando..." : <Play size={20} />}
-        </button>
-      </div>
-
-      {/* Preview */}
-      <div style={{ flex: 1 }}>
-        <Sandpack
-          template="react"
-          theme="dark"
+      {/* Área Principal (Sandpack Customizado) */}
+      <div style={{ flex: 1, overflow: "hidden", position: "relative" }}>
+        <SandpackProvider 
+          template="react" 
+          theme="dark" 
           files={files}
-          options={{ showNavigator: true, editorHeight: "100%" }}
-        />
+          options={{
+            externalResources: ["https://cdn.tailwindcss.com"]
+          }}
+        >
+          <SandpackLayout style={{ height: "100%", border: "none", background: "#000" }}>
+            
+            {/* Renderização Condicional das Abas */}
+            <div style={{ 
+              display: activeTab === "code" ? "block" : "none", 
+              height: "100%", 
+              width: "100%" 
+            }}>
+              <SandpackCodeEditor 
+                showTabs 
+                showLineNumbers 
+                showInlineErrors 
+                wrapContent 
+                style={{ height: "100%" }} 
+              />
+            </div>
+
+            <div style={{ 
+              display: activeTab === "preview" ? "block" : "none", 
+              height: "100%", 
+              width: "100%" 
+            }}>
+              <SandpackPreview 
+                showNavigator 
+                showRefreshButton
+                style={{ height: "100%" }} 
+              />
+            </div>
+
+          </SandpackLayout>
+        </SandpackProvider>
+      </div>
+
+      {/* Barra de Comando (Fica embaixo igual app de mensagem) */}
+      <div style={{ padding: "16px", background: "#0a0a0a", borderTop: "1px solid #222" }}>
+        <div style={{ 
+          display: "flex", 
+          gap: "10px", 
+          background: "#1a1a1a", 
+          padding: "8px", 
+          borderRadius: "12px",
+          border: "1px solid #333"
+        }}>
+          <input 
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
+            placeholder="Descreva seu app..."
+            style={{ 
+              flex: 1, 
+              background: "transparent", 
+              border: "none", 
+              color: "white", 
+              outline: "none",
+              padding: "0 8px"
+            }}
+          />
+          <button 
+            onClick={handleGenerate} 
+            disabled={loading}
+            style={{ 
+              background: loading ? "#333" : "#ff4444", 
+              color: "white", 
+              border: "none", 
+              width: "40px",
+              height: "40px",
+              borderRadius: "8px", 
+              display: "flex", 
+              alignItems: "center", 
+              justifyContent: "center"
+            }}
+          >
+            {loading ? <div className="animate-spin">⏳</div> : <Play size={20} fill="white" />}
+          </button>
+        </div>
       </div>
     </div>
   );
