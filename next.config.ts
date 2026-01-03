@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* Ignora erros de TypeScript e ESLint para publicar rápido */
+  /* O Pulo do Gato: Ignora os erros para o site entrar no ar */
   typescript: {
     ignoreBuildErrors: true,
   },
