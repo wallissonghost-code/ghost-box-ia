@@ -115,8 +115,8 @@ export default function Home() {
         <div style={{ display: "flex", gap: "10px" }}>
           <button 
             onClick={handleReset} 
-            title="Limpar Projeto"
-            style={{ background: "#222", border: "1px solid #333", color: "#666", padding: "8px", borderRadius: "6px", cursor: "pointer" }}
+            title="Novo Projeto"
+            style={{ background: "#222", border: "1px solid #333", color: "#ff4444", padding: "8px", borderRadius: "6px", cursor: "pointer" }}
           >
             <Trash2 size={18} />
           </button>
