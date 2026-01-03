@@ -74,8 +74,27 @@ export default function Home() {
   };
 
   const handleReset = () => {
-    if (confirm("Deseja realmente limpar o projeto e começar do zero?")) {
-      setFiles(initialFiles);
+    if (confirm("Tem certeza? Isso vai apagar o projeto atual.")) {
+      setFiles({
+        "/App.js": `export default function App() {
+  return (
+    <div style={{ 
+      height: '100vh', 
+      display: 'flex', 
+      alignItems: 'center', 
+      justifyContent: 'center', 
+      background: '#0a0a0a', 
+      color: '#fff',
+      fontFamily: 'system-ui' 
+    }}>
+      <div style={{ textAlign: 'center' }}>
+        <h1 style={{ fontSize: '3rem', margin: 0, color: '#ff4444' }}>Redbox</h1>
+        <p style={{ color: '#666' }}>Sua IA de criação web.</p>
+      </div>
+    </div>
+  );
+}`,
+      });
       setPrompt("");
       setActiveTab("preview");
     }
