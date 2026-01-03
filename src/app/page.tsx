@@ -6,7 +6,7 @@ import {
   SandpackCodeEditor, 
   SandpackPreview 
 } from "@codesandbox/sandpack-react";
-import { Play, Code2, Eye, Box, Download, RefreshCw } from "lucide-react";
+import { Play, Code2, Eye, Box, Download, RefreshCw, Trash2 } from "lucide-react";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 
@@ -15,7 +15,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<"code" | "preview">("preview");
   
-  const [files, setFiles] = useState<Record<string, string>>({
+  const initialFiles = {
     "/App.js": `export default function App() {
   return (
     <div style={{ 
@@ -34,7 +34,9 @@ export default function Home() {
     </div>
   );
 }`,
-  });
+  };
+
+  const [files, setFiles] = useState<Record<string, string>>(initialFiles);
 
   async function handleGenerate() {
     if (!prompt) return;
@@ -71,6 +73,14 @@ export default function Home() {
     saveAs(blob, "projeto-redbox.zip");
   };
 
+  const handleReset = () => {
+    if (confirm("Deseja realmente limpar o projeto e começar do zero?")) {
+      setFiles(initialFiles);
+      setPrompt("");
+      setActiveTab("preview");
+    }
+  };
+
   return (
     <div style={{ display: "flex", height: "100vh", flexDirection: "column", background: "#000", color: "white" }}>
       
@@ -84,7 +94,18 @@ export default function Home() {
         </div>
         
         <div style={{ display: "flex", gap: "10px" }}>
-          <button onClick={handleDownload} style={{ background: "#222", border: "1px solid #333", color: "white", padding: "8px", borderRadius: "6px" }}>
+          <button 
+            onClick={handleReset} 
+            title="Limpar Projeto"
+            style={{ background: "#222", border: "1px solid #333", color: "#666", padding: "8px", borderRadius: "6px", cursor: "pointer" }}
+          >
+            <Trash2 size={18} />
+          </button>
+          <button 
+            onClick={handleDownload} 
+            title="Baixar Projeto"
+            style={{ background: "#222", border: "1px solid #333", color: "white", padding: "8px", borderRadius: "6px", cursor: "pointer" }}
+          >
             <Download size={18} />
           </button>
           <div style={{ display: "flex", background: "#1a1a1a", borderRadius: "8px", padding: "2px" }}>
