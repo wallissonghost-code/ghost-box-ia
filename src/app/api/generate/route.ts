@@ -1,5 +1,5 @@
-import { OpenAI } from "openai";
-import { NextResponse } from "next/server";
+import { NextResponse } from 'next/server';
+import OpenAI from 'openai';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -9,26 +9,26 @@ export async function POST(req: Request) {
   try {
     const { prompt } = await req.json();
 
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o",
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
       messages: [
         {
           role: "system",
-          content: "You are a helpful assistant that generates code based on user prompts.",
+          content: `Você é um gerador de código React especialista.
+          Responda APENAS com um JSON válido.
+          As chaves são os caminhos dos arquivos e os valores são o código.
+          Use SEMPRE export default function App no arquivo principal.
+          Exemplo: { "/App.js": "..." }`
         },
-        {
-          role: "user",
-          content: prompt,
-        },
+        { role: "user", content: `Crie um site: ${prompt}` }
       ],
+      response_format: { type: "json_object" },
     });
 
-    return NextResponse.json({ result: response.choices[0].message.content });
+    const content = completion.choices[0].message.content;
+    const files = JSON.parse(content || "{}");
+    return NextResponse.json(files);
   } catch (error) {
-    console.error("Error generating code:", error);
-    return NextResponse.json(
-      { error: "Failed to generate code" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Erro na API' }, { status: 500 });
   }
 }
