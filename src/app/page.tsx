@@ -18,38 +18,46 @@ export default function Home() {
   const [isListening, setIsListening] = useState(false);
   const { user } = useUser();
   
-  // Template Inicial Centralizado e Bonito
+  // --- O SEGREDO DO VISUAL PROFISSIONAL ---
+  // Este é o código inicial que aparece na "Segunda Página".
+  // Configuramos para ser Dark Mode nativo e centralizado.
   const [files, setFiles] = useState<Record<string, string>>({
     "/App.js": `export default function App() {
   return (
     <div style={{ 
       height: '100vh', 
+      width: '100vw',
       display: 'flex', 
       flexDirection: 'column',
       alignItems: 'center', 
       justifyContent: 'center', 
-      background: '#050505', 
+      background: '#020202', // Fundo Super Dark
       color: '#fff',
-      fontFamily: 'system-ui, sans-serif' 
+      fontFamily: 'Inter, system-ui, sans-serif',
+      margin: 0,
+      padding: 0,
+      overflow: 'hidden'
     }}>
       <div style={{ 
         textAlign: 'center', 
-        padding: '40px',
-        border: '1px solid #1f1f1f',
-        borderRadius: '20px',
-        background: 'linear-gradient(145deg, #0a0a0a, #000)',
-        boxShadow: '0 0 30px rgba(124, 58, 237, 0.1)'
+        padding: '50px',
+        border: '1px solid #1a1a1a',
+        borderRadius: '24px',
+        background: 'linear-gradient(180deg, #0a0a0a 0%, #050505 100%)',
+        boxShadow: '0 0 60px rgba(168, 85, 247, 0.15)', // Glow Roxo Suave
+        maxWidth: '90%',
+        width: '400px'
       }}>
         <h1 style={{ 
-          fontSize: '3rem', 
-          margin: '0 0 10px 0', 
-          color: '#a855f7', 
-          textShadow: '0 0 20px rgba(168, 85, 247, 0.4)',
+          fontSize: '2.5rem', 
+          margin: '0 0 15px 0',
+          color: '#a855f7',
+          textShadow: '0 0 30px rgba(168, 85, 247, 0.3)',
           fontWeight: '800'
         }}>
           Ghost Box
         </h1>
-        <p style={{ color: '#666', fontSize: '1.1rem' }}>
+        <p style={{ color: '#666', fontSize: '1.1rem', margin: 0 }}>
           O que vamos materializar hoje?
         </p>
       </div>
@@ -117,7 +125,7 @@ export default function Home() {
       flexDirection: 'column',
       alignItems: 'center', 
       justifyContent: 'center', 
-      background: '#050505', 
+      background: '#020202', 
       color: '#fff',
       fontFamily: 'system-ui' 
     }}>
