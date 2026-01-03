@@ -9,6 +9,7 @@ import {
 import { Play, Code2, Eye, Ghost, Download, RefreshCw, Trash2, Mic, MicOff } from "lucide-react";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
+import { UserButton, SignInButton, SignedIn, SignedOut } from "@clerk/nextjs";
 
 export default function Home() {
   const [prompt, setPrompt] = useState("");
@@ -147,7 +148,7 @@ export default function Home() {
           <span style={{ fontWeight: "bold", letterSpacing: "1px", fontSize: "1.1rem" }}>GHOST BOX</span>
         </div>
         
-        <div style={{ display: "flex", gap: "10px" }}>
+        <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
            <button onClick={handleReset} style={{ background: "#1a1a1a", border: "1px solid #333", color: "#666", padding: "8px", borderRadius: "6px", cursor: "pointer" }}>
             <Trash2 size={18} />
           </button>
@@ -158,6 +159,26 @@ export default function Home() {
             <button onClick={() => setActiveTab("code")} style={{ padding: "8px 12px", borderRadius: "6px", background: activeTab === "code" ? "#222" : "transparent", color: activeTab === "code" ? "white" : "#666", border: "none", cursor: "pointer" }}><Code2 size={18} /></button>
             <button onClick={() => setActiveTab("preview")} style={{ padding: "8px 12px", borderRadius: "6px", background: activeTab === "preview" ? "#7c3aed" : "transparent", color: activeTab === "preview" ? "white" : "#666", border: "none", cursor: "pointer" }}><Eye size={18} /></button>
           </div>
+          
+          <SignedIn>
+            <UserButton afterSignOutUrl="/" />
+          </SignedIn>
+          <SignedOut>
+            <SignInButton mode="modal">
+              <button style={{ 
+                background: "linear-gradient(135deg, #7c3aed, #a855f7)", 
+                color: "white", 
+                border: "none", 
+                padding: "8px 16px", 
+                borderRadius: "8px", 
+                fontWeight: "bold",
+                cursor: "pointer",
+                boxShadow: "0 0 10px rgba(124, 58, 237, 0.3)"
+              }}>
+                Entrar
+              </button>
+            </SignInButton>
+          </SignedOut>
         </div>
       </div>
 
@@ -175,40 +196,50 @@ export default function Home() {
         </SandpackProvider>
       </div>
 
-      {/* Input de Voz */}
+      {/* Input de Voz / Mensagem de Login */}
       <div style={{ padding: "16px", background: "#0a0a0a", borderTop: "1px solid #1f1f1f" }}>
-        <div style={{ display: "flex", gap: "10px", background: "#111", padding: "8px", borderRadius: "12px", border: "1px solid #222", boxShadow: "0 0 20px rgba(0,0,0,0.5)" }}>
-          
-          {/* Botão Microfone */}
-          <button 
-            onClick={startListening}
-            style={{ 
-              background: isListening ? "#ef4444" : "#222", 
-              color: "white", 
-              border: "none", 
-              width: "40px", 
-              borderRadius: "8px", 
-              display: "flex", 
-              alignItems: "center", 
-              justifyContent: "center",
-              transition: "all 0.3s ease",
-              cursor: "pointer"
-            }}
-          >
-            {isListening ? <MicOff size={20} className="animate-pulse" /> : <Mic size={20} />}
-          </button>
+        <SignedIn>
+          <div style={{ display: "flex", gap: "10px", background: "#111", padding: "8px", borderRadius: "12px", border: "1px solid #222", boxShadow: "0 0 20px rgba(0,0,0,0.5)" }}>
+            
+            {/* Botão Microfone */}
+            <button 
+              onClick={startListening}
+              style={{ 
+                background: isListening ? "#ef4444" : "#222", 
+                color: "white", 
+                border: "none", 
+                width: "40px", 
+                borderRadius: "8px", 
+                display: "flex", 
+                alignItems: "center", 
+                justifyContent: "center",
+                transition: "all 0.3s ease",
+                cursor: "pointer"
+              }}
+            >
+              {isListening ? <MicOff size={20} className="animate-pulse" /> : <Mic size={20} />}
+            </button>
 
-          <input 
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-            placeholder={isListening ? "Ouvindo..." : "Toque no mic ou digite..."}
-            style={{ flex: 1, background: "transparent", border: "none", color: "white", outline: "none", padding: "0 8px" }}
-          />
-          
-          <button onClick={handleGenerate} disabled={loading} style={{ background: loading ? "#333" : "linear-gradient(135deg, #7c3aed, #a855f7)", color: "white", border: "none", width: "40px", height: "40px", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 0 10px rgba(124, 58, 237, 0.2)", cursor: loading ? "default" : "pointer" }}>
-            {loading ? <RefreshCw className="animate-spin" size={20}/> : <Play size={20} fill="white" />}
-          </button>
-        </div>
+            <input 
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              placeholder={isListening ? "Ouvindo..." : "Toque no mic ou digite..."}
+              style={{ flex: 1, background: "transparent", border: "none", color: "white", outline: "none", padding: "0 8px" }}
+            />
+            
+            <button onClick={handleGenerate} disabled={loading} style={{ background: loading ? "#333" : "linear-gradient(135deg, #7c3aed, #a855f7)", color: "white", border: "none", width: "40px", height: "40px", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 0 10px rgba(124, 58, 237, 0.2)", cursor: loading ? "default" : "pointer" }}>
+              {loading ? <RefreshCw className="animate-spin" size={20}/> : <Play size={20} fill="white" />}
+            </button>
+          </div>
+        </SignedIn>
+        
+        <SignedOut>
+          <div style={{ textAlign: "center", padding: "10px", color: "#888" }}>
+            <p style={{ fontSize: "1rem", letterSpacing: "0.5px" }}>
+              Faça login para invocar a IA e materializar suas ideias.
+            </p>
+          </div>
+        </SignedOut>
       </div>
     </div>
   );
