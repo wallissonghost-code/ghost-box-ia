@@ -6,14 +6,16 @@ import {
   SandpackCodeEditor, 
   SandpackPreview 
 } from "@codesandbox/sandpack-react";
-import { Play, Code2, Eye, Box } from "lucide-react";
+import { Play, Code2, Eye, Box, Download } from "lucide-react";
+import JSZip from "jszip";
+import { saveAs } from "file-saver";
 
 export default function Home() {
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<"code" | "preview">("preview");
   
-  const [files, setFiles] = useState({
+  const [files, setFiles] = useState<Record<string, string>>({
     "/App.js": `export default function App() {
   return (
     <div style={{ 
@@ -37,7 +39,7 @@ export default function Home() {
   async function handleGenerate() {
     if (!prompt) return;
     setLoading(true);
-    setActiveTab("preview"); // Muda para o preview automaticamente ao gerar
+    setActiveTab("preview");
     try {
       const response = await fetch("/api/generate", {
         method: "POST",
@@ -52,10 +54,21 @@ export default function Home() {
     }
   }
 
+  const handleDownload = async () => {
+    const zip = new JSZip();
+    
+    Object.keys(files).forEach((path) => {
+      const cleanPath = path.startsWith('/') ? path.slice(1) : path;
+      zip.file(cleanPath, files[path]);
+    });
+
+    const blob = await zip.generateAsync({ type: "blob" });
+    saveAs(blob, "projeto-redbox.zip");
+  };
+
   return (
     <div style={{ display: "flex", height: "100vh", flexDirection: "column", background: "#000", color: "white" }}>
       
-      {/* Header Pro */}
       <div style={{ 
         padding: "12px 16px", 
         borderBottom: "1px solid #222", 
@@ -71,42 +84,51 @@ export default function Home() {
           <span style={{ fontWeight: "bold", letterSpacing: "1px" }}>REDBOX</span>
         </div>
         
-        {/* Controle de Abas */}
-        <div style={{ display: "flex", background: "#1a1a1a", borderRadius: "8px", padding: "2px" }}>
+        <div style={{ display: "flex", gap: "10px" }}>
           <button 
-            onClick={() => setActiveTab("code")}
+            onClick={handleDownload}
+            title="Baixar Projeto"
             style={{ 
-              padding: "8px 16px", 
-              borderRadius: "6px", 
-              background: activeTab === "code" ? "#333" : "transparent",
-              color: activeTab === "code" ? "white" : "#666",
-              border: "none",
-              display: "flex",
-              alignItems: "center",
-              gap: 6
+              background: "#222", 
+              border: "1px solid #333", 
+              color: "white", 
+              padding: "8px", 
+              borderRadius: "6px",
+              cursor: "pointer"
             }}
           >
-            <Code2 size={16} /> Código
+            <Download size={18} />
           </button>
-          <button 
-            onClick={() => setActiveTab("preview")}
-            style={{ 
-              padding: "8px 16px", 
-              borderRadius: "6px", 
-              background: activeTab === "preview" ? "#ff4444" : "transparent",
-              color: activeTab === "preview" ? "white" : "#666",
-              border: "none",
-              display: "flex",
-              alignItems: "center",
-              gap: 6
-            }}
-          >
-            <Eye size={16} /> Visual
-          </button>
+
+          <div style={{ display: "flex", background: "#1a1a1a", borderRadius: "8px", padding: "2px" }}>
+            <button 
+              onClick={() => setActiveTab("code")}
+              style={{ 
+                padding: "8px 12px", 
+                borderRadius: "6px", 
+                background: activeTab === "code" ? "#333" : "transparent",
+                color: activeTab === "code" ? "white" : "#666",
+                border: "none"
+              }}
+            >
+              <Code2 size={18} />
+            </button>
+            <button 
+              onClick={() => setActiveTab("preview")}
+              style={{ 
+                padding: "8px 12px", 
+                borderRadius: "6px", 
+                background: activeTab === "preview" ? "#ff4444" : "transparent",
+                color: activeTab === "preview" ? "white" : "#666",
+                border: "none"
+              }}
+            >
+              <Eye size={18} />
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Área Principal (Sandpack Customizado) */}
       <div style={{ flex: 1, overflow: "hidden", position: "relative" }}>
         <SandpackProvider 
           template="react" 
@@ -117,39 +139,16 @@ export default function Home() {
           }}
         >
           <SandpackLayout style={{ height: "100%", border: "none", background: "#000" }}>
-            
-            {/* Renderização Condicional das Abas */}
-            <div style={{ 
-              display: activeTab === "code" ? "block" : "none", 
-              height: "100%", 
-              width: "100%" 
-            }}>
-              <SandpackCodeEditor 
-                showTabs 
-                showLineNumbers 
-                showInlineErrors 
-                wrapContent 
-                style={{ height: "100%" }} 
-              />
+            <div style={{ display: activeTab === "code" ? "block" : "none", height: "100%", width: "100%" }}>
+              <SandpackCodeEditor showTabs showLineNumbers showInlineErrors wrapContent style={{ height: "100%" }} />
             </div>
-
-            <div style={{ 
-              display: activeTab === "preview" ? "block" : "none", 
-              height: "100%", 
-              width: "100%" 
-            }}>
-              <SandpackPreview 
-                showNavigator 
-                showRefreshButton
-                style={{ height: "100%" }} 
-              />
+            <div style={{ display: activeTab === "preview" ? "block" : "none", height: "100%", width: "100%" }}>
+              <SandpackPreview showNavigator showRefreshButton style={{ height: "100%" }} />
             </div>
-
           </SandpackLayout>
         </SandpackProvider>
       </div>
 
-      {/* Barra de Comando (Fica embaixo igual app de mensagem) */}
       <div style={{ padding: "16px", background: "#0a0a0a", borderTop: "1px solid #222" }}>
         <div style={{ 
           display: "flex", 
@@ -162,7 +161,7 @@ export default function Home() {
           <input 
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
-            placeholder="Descreva seu app..."
+            placeholder="Ex: Landing page de café..."
             style={{ 
               flex: 1, 
               background: "transparent", 
@@ -187,7 +186,7 @@ export default function Home() {
               justifyContent: "center"
             }}
           >
-            {loading ? <div className="animate-spin">⏳</div> : <Play size={20} fill="white" />}
+            {loading ? "⏳" : <Play size={20} fill="white" />}
           </button>
         </div>
       </div>
