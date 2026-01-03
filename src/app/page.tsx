@@ -6,7 +6,7 @@ import {
   SandpackCodeEditor, 
   SandpackPreview 
 } from "@codesandbox/sandpack-react";
-import { Play, Code2, Eye, Ghost, Download, RefreshCw, Trash2, Mic, MicOff } from "lucide-react";
+import { Play, Code2, Eye, Ghost, Download, RefreshCw, Trash2, Mic, MicOff, Lock, Gem, X } from "lucide-react";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import { UserButton, SignInButton, SignedIn, SignedOut, useUser } from "@clerk/nextjs";
@@ -16,11 +16,10 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<"code" | "preview">("preview");
   const [isListening, setIsListening] = useState(false);
+  const [isPremium, setIsPremium] = useState(false); // Freemium state
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const { user } = useUser();
   
-  // --- O SEGREDO DO VISUAL PROFISSIONAL ---
-  // Este é o código inicial que aparece na "Segunda Página".
-  // Configuramos para ser Dark Mode nativo e centralizado.
   const [files, setFiles] = useState<Record<string, string>>({
     "/App.js": `export default function App() {
   return (
@@ -31,7 +30,7 @@ export default function Home() {
       flexDirection: 'column',
       alignItems: 'center', 
       justifyContent: 'center', 
-      background: '#020202', // Fundo Super Dark
+      background: '#020202',
       color: '#fff',
       fontFamily: 'Inter, system-ui, sans-serif',
       margin: 0,
@@ -44,7 +43,7 @@ export default function Home() {
         border: '1px solid #1a1a1a',
         borderRadius: '24px',
         background: 'linear-gradient(180deg, #0a0a0a 0%, #050505 100%)',
-        boxShadow: '0 0 60px rgba(168, 85, 247, 0.15)', // Glow Roxo Suave
+        boxShadow: '0 0 60px rgba(168, 85, 247, 0.15)',
         maxWidth: '90%',
         width: '400px'
       }}>
@@ -67,6 +66,11 @@ export default function Home() {
   });
 
   const startListening = () => {
+    if (!isPremium) {
+      setShowUpgradeModal(true);
+      return;
+    }
+
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
       const SpeechRecognition = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
       const recognition = new SpeechRecognition();
@@ -105,6 +109,11 @@ export default function Home() {
   }
 
   const handleDownload = async () => {
+    if (!isPremium) {
+      setShowUpgradeModal(true);
+      return;
+    }
+
     const zip = new JSZip();
     Object.keys(files).forEach((path) => {
       const cleanPath = path.startsWith('/') ? path.slice(1) : path;
@@ -145,7 +154,64 @@ export default function Home() {
   return (
     <div style={{ height: "100vh", background: "#000", color: "white", display: "flex", flexDirection: "column" }}>
       
-      {/* --- TELA DE LOGIN (Centralizada) --- */}
+      {/* Modal de Upgrade */}
+      {showUpgradeModal && (
+        <div style={{
+          position: "fixed",
+          inset: 0,
+          background: "rgba(0,0,0,0.8)",
+          backdropFilter: "blur(10px)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 100,
+          padding: "20px"
+        }}>
+          <div style={{
+            background: "#0a0a0a",
+            border: "1px solid #a855f733",
+            padding: "40px",
+            borderRadius: "24px",
+            maxWidth: "400px",
+            width: "100%",
+            textAlign: "center",
+            position: "relative",
+            boxShadow: "0 0 50px rgba(168, 85, 247, 0.2)"
+          }}>
+            <button 
+              onClick={() => setShowUpgradeModal(false)}
+              style={{ position: "absolute", top: 20, right: 20, background: "none", border: "none", color: "#666", cursor: "pointer" }}
+            >
+              <X size={20} />
+            </button>
+            <Gem size={48} color="#a855f7" style={{ marginBottom: "20px" }} />
+            <h2 style={{ fontSize: "1.8rem", marginBottom: "15px" }}>Desbloqueie o Poder Total 👻</h2>
+            <div style={{ textAlign: "left", marginBottom: "30px", color: "#888" }}>
+              <p style={{ marginBottom: "10px" }}>🎙️ Comandos de Voz</p>
+              <p style={{ marginBottom: "10px" }}>💾 Download do Código</p>
+              <p>⚡ Geração Turbo</p>
+            </div>
+            <button 
+              style={{
+                width: "100%",
+                background: "linear-gradient(135deg, #7c3aed, #a855f7)",
+                color: "white",
+                border: "none",
+                padding: "15px",
+                borderRadius: "12px",
+                fontWeight: "bold",
+                fontSize: "1.1rem",
+                cursor: "pointer",
+                boxShadow: "0 0 20px rgba(124, 58, 237, 0.4)"
+              }}
+            >
+              Assinar Agora
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* --- TELA DE LOGIN --- */}
       <SignedOut>
         <div style={{ 
           flex: 1, 
@@ -193,7 +259,7 @@ export default function Home() {
         </div>
       </SignedOut>
 
-      {/* --- APP PRINCIPAL (Só aparece se logado) --- */}
+      {/* --- APP PRINCIPAL --- */}
       <SignedIn>
         <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
           
@@ -207,8 +273,39 @@ export default function Home() {
             </div>
             
             <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+              {!isPremium && (
+                <button 
+                  onClick={() => setShowUpgradeModal(true)}
+                  style={{
+                    background: "rgba(168, 85, 247, 0.1)",
+                    border: "1px solid #a855f733",
+                    color: "#a855f7",
+                    padding: "8px 16px",
+                    borderRadius: "8px",
+                    fontWeight: "bold",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    cursor: "pointer"
+                  }}
+                >
+                  <Gem size={16} /> Seja PRO
+                </button>
+              )}
               <button onClick={handleReset} style={{ background: "#1a1a1a", border: "1px solid #333", color: "#666", padding: "8px", borderRadius: "6px", cursor: "pointer" }}><Trash2 size={18} /></button>
-              <button onClick={handleDownload} style={{ background: "#1a1a1a", border: "1px solid #333", color: "white", padding: "8px", borderRadius: "6px", cursor: "pointer" }}><Download size={18} /></button>
+              <button 
+                onClick={handleDownload} 
+                style={{ 
+                  background: "#1a1a1a", 
+                  border: "1px solid #333", 
+                  color: isPremium ? "white" : "#444", 
+                  padding: "8px", 
+                  borderRadius: "6px", 
+                  cursor: "pointer" 
+                }}
+              >
+                <Download size={18} />
+              </button>
               <UserButton afterSignOutUrl="/" appearance={{ elements: { avatarBox: { width: 35, height: 35 }}}} />
             </div>
           </div>
@@ -216,7 +313,6 @@ export default function Home() {
           {/* Abas e Editor */}
           <div style={{ flex: 1, overflow: "hidden", position: "relative", display: "flex", flexDirection: "column" }}>
             
-             {/* Controle de Abas Flutuante */}
              <div style={{ position: "absolute", top: 10, right: 10, zIndex: 10, background: "#1a1a1a", borderRadius: "8px", padding: "2px", border: "1px solid #333" }}>
                 <button onClick={() => setActiveTab("code")} style={{ padding: "6px 10px", borderRadius: "6px", background: activeTab === "code" ? "#333" : "transparent", color: activeTab === "code" ? "white" : "#666", border: "none", cursor: "pointer" }}><Code2 size={16} /></button>
                 <button onClick={() => setActiveTab("preview")} style={{ padding: "6px 10px", borderRadius: "6px", background: activeTab === "preview" ? "#7c3aed" : "transparent", color: activeTab === "preview" ? "white" : "#666", border: "none", cursor: "pointer" }}><Eye size={16} /></button>
@@ -237,9 +333,28 @@ export default function Home() {
           {/* Input Area */}
           <div style={{ padding: "16px", background: "#0a0a0a", borderTop: "1px solid #1f1f1f" }}>
             <div style={{ display: "flex", gap: "10px", background: "#111", padding: "8px", borderRadius: "12px", border: "1px solid #222", boxShadow: "0 0 20px rgba(0,0,0,0.5)" }}>
-              <button onClick={startListening} style={{ background: isListening ? "#ef4444" : "#222", color: "white", border: "none", width: "40px", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
-                {isListening ? <MicOff size={20} className="animate-pulse" /> : <Mic size={20} />}
-              </button>
+              <div style={{ position: "relative" }}>
+                <button 
+                  onClick={startListening} 
+                  style={{ 
+                    background: isListening ? "#ef4444" : "#222", 
+                    color: "white", 
+                    border: "none", 
+                    width: "40px", 
+                    height: "40px",
+                    borderRadius: "8px", 
+                    display: "flex", 
+                    alignItems: "center", 
+                    justifyContent: "center", 
+                    cursor: "pointer" 
+                  }}
+                >
+                  {isListening ? <MicOff size={20} className="animate-pulse" /> : <Mic size={20} />}
+                </button>
+                {!isPremium && (
+                  <Lock size={12} style={{ position: "absolute", bottom: -2, right: -2, color: "#666" }} />
+                )}
+              </div>
               <input 
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
